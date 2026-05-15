@@ -1,27 +1,29 @@
 #!/bin/bash
 
-# Download PostgreSQL JDBC driver if not present
-if [ ! -f /opt/bitnami/spark/jars/postgresql-42.7.1.jar ]; then
-  echo "Downloading PostgreSQL JDBC driver..."
-  curl -o /opt/bitnami/spark/jars/postgresql-42.7.1.jar \
-    https://jdbc.postgresql.org/download/postgresql-42.7.1.jar
-fi
+SPARK_HOME=/opt/spark
 
-# Install Jupyter
-pip install jupyter --quiet
+# Download PostgreSQL JDBC driver
+echo "Downloading PostgreSQL JDBC driver..."
+curl -o $SPARK_HOME/jars/postgresql-42.7.1.jar \
+  https://jdbc.postgresql.org/download/postgresql-42.7.1.jar
+
+# Install Jupyter + pyspark
+pip install jupyter notebook pyspark==3.5.8
 
 # Start Thrift Server in background
 echo "Starting Thrift Server on port 10001..."
-/opt/bitnami/spark/sbin/start-thriftserver.sh \
+$SPARK_HOME/sbin/start-thriftserver.sh \
   --master local \
   --hiveconf hive.server2.transport.mode=http \
   --hiveconf hive.server2.thrift.http.port=10001 \
   --hiveconf hive.server2.thrift.http.path=cliservice \
   --hiveconf hive.server2.thrift.bind.host=0.0.0.0
 
+sleep 5
+
 # Start Jupyter
 echo "Starting Jupyter on port 8888..."
-jupyter notebook \
+python3 -m jupyter notebook \
   --ip=0.0.0.0 \
   --port=8888 \
   --no-browser \

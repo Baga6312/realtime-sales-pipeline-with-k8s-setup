@@ -1,8 +1,5 @@
-version: "3.8"
-
 services:
 
-  # PostgreSQL Metastore
   postgres:
     image: postgres:15
     container_name: metastore-db
@@ -17,61 +14,53 @@ services:
     networks:
       - bigdata
 
-  # Hadoop NameNode
   namenode:
-    image: apache/hadoop:3
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     container_name: namenode
     hostname: namenode
-    command: ["hdfs", "namenode"]
     environment:
-      HADOOP_HOME: /opt/hadoop
-      CLUSTER_NAME: local
+      - CLUSTER_NAME=bigdata
     env_file:
       - hadoop.env
     ports:
-      - "9870:9870"   # HDFS Web UI
-      - "9000:9000"   # HDFS
+      - "9870:9870"
+      - "9000:9000"
     volumes:
-      - namenode_data:/tmp/hadoop-root/dfs/name
+      - namenode_data:/hadoop/dfs/name
+      - hadoop_conf:/etc/hadoop
     networks:
       - bigdata
 
-  # Hadoop DataNode
   datanode:
-    image: apache/hadoop:3
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode
     hostname: datanode
-    command: ["hdfs", "datanode"]
     env_file:
       - hadoop.env
     volumes:
-      - datanode_data:/tmp/hadoop-root/dfs/data
+      - datanode_data:/hadoop/dfs/data
     networks:
       - bigdata
     depends_on:
       - namenode
 
-  # YARN ResourceManager
   resourcemanager:
-    image: apache/hadoop:3
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
     container_name: resourcemanager
     hostname: resourcemanager
-    command: ["yarn", "resourcemanager"]
     env_file:
       - hadoop.env
     ports:
-      - "8088:8088"   # YARN Web UI
+      - "8088:8088"
     networks:
       - bigdata
     depends_on:
       - namenode
 
-  # YARN NodeManager
   nodemanager:
-    image: apache/hadoop:3
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
     container_name: nodemanager
     hostname: nodemanager
-    command: ["yarn", "nodemanager"]
     env_file:
       - hadoop.env
     networks:
@@ -79,35 +68,39 @@ services:
     depends_on:
       - resourcemanager
 
-  # Spark + Thrift Server + Jupyter
   spark:
-    image: bitnami/spark
+    image: apache/spark:3.5.8
     container_name: spark
     hostname: spark
+    user: root
     environment:
-      - SPARK_MODE=master
-      - SPARK_EXTRA_CLASSPATH=/opt/bitnami/spark/jars/postgresql-42.7.1.jar
+      - HOME=/root
+      - HADOOP_CONF_DIR=/etc/hadoop
+      - YARN_CONF_DIR=/etc/hadoop
     ports:
-      - "4040:4040"     # Spark UI
-      - "8080:8080"     # Spark Master UI
-      - "10001:10001"   # Thrift Server (Power BI)
-      - "8888:8888"     # Jupyter
+      - "4040:4040"
+      - "8080:8080"
+      - "10001:10001"
+      - "8888:8888"
     volumes:
       - ./notebooks:/notebooks
       - ./data:/data
-      - ./hive-site.xml:/opt/bitnami/spark/conf/hive-site.xml
+      - ./hive-site.xml:/opt/spark/conf/hive-site.xml
       - ./start-spark.sh:/start-spark.sh
+      - hadoop_conf:/etc/hadoop
     command: bash /start-spark.sh
     networks:
       - bigdata
     depends_on:
       - postgres
       - namenode
+      - resourcemanager
 
 volumes:
   postgres_data:
   namenode_data:
   datanode_data:
+  hadoop_conf:
 
 networks:
   bigdata:
