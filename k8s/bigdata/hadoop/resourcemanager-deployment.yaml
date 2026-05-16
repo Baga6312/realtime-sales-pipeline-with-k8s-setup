@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resourcemanager
+  namespace: bigdata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resourcemanager
+  template:
+    metadata:
+      labels:
+        app: resourcemanager
+    spec:
+      containers:
+        - name: resourcemanager
+          image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+          ports:
+            - containerPort: 8088
+          envFrom:
+            - configMapRef:
+                name: hadoop-config
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8088
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8088
+            initialDelaySeconds: 30
+            periodSeconds: 10

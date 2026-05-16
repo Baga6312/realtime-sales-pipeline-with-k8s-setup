@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: namenode
+  namespace: bigdata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: namenode
+  template:
+    metadata:
+      labels:
+        app: namenode
+    spec:
+      containers:
+        - name: namenode
+          image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+          ports:
+            - containerPort: 9870
+            - containerPort: 9000
+          env:
+            - name: CLUSTER_NAME
+              value: bigdata
+          envFrom:
+            - configMapRef:
+                name: hadoop-config
+          volumeMounts:
+            - name: namenode-storage
+              mountPath: /hadoop/dfs/name
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9870
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9870
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: namenode-storage
+          persistentVolumeClaim:
+            claimName: namenode-pvc

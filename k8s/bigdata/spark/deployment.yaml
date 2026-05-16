@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark
+  namespace: bigdata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark
+  template:
+    metadata:
+      labels:
+        app: spark
+    spec:
+      containers:
+        - name: spark
+          image: apache/spark:3.5.8
+          command: ["/bin/bash", "/start-spark.sh"]
+          ports:
+            - containerPort: 4040
+            - containerPort: 8080
+            - containerPort: 10001
+            - containerPort: 8888
+          env:
+            - name: HOME
+              value: /root
+            - name: HADOOP_CONF_DIR
+              value: /etc/hadoop
+            - name: YARN_CONF_DIR
+              value: /etc/hadoop
+          volumeMounts:
+            - name: hive-config
+              mountPath: /opt/spark/conf/hive-site.xml
+              subPath: hive-site.xml
+            - name: notebooks
+              mountPath: /notebooks
+            - name: start-script
+              mountPath: /start-spark.sh
+              subPath: start-spark.sh
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+      volumes:
+        - name: hive-config
+          configMap:
+            name: spark-hive-config
+        - name: notebooks
+          persistentVolumeClaim:
+            claimName: notebooks-pvc
+        - name: start-script
+          configMap:
+            name: spark-start-script

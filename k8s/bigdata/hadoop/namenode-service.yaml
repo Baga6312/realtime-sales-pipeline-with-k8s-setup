@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: namenode
+  namespace: bigdata
+spec:
+  selector:
+    app: namenode
+  ports:
+    - name: web
+      port: 9870
+      targetPort: 9870
+    - name: hdfs
+      port: 9000
+      targetPort: 9000
+  type: ClusterIP

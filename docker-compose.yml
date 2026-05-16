@@ -12,13 +12,13 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
+      - ./postgres/init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
     networks:
       - bigdata
 
   wordpress:
     build:
-      context: .
+      context: ./wordpress  
       dockerfile: Dockerfile-wordpress
     container_name: wordpress
     environment:
@@ -111,10 +111,10 @@ services:
     volumes:
       - ./notebooks:/notebooks
       - ./data:/data
-      - pip_cache:/root/.cache/pip
-      - ./hive-site.xml:/opt/spark/conf/hive-site.xml
-      - ./start-spark.sh:/start-spark.sh
+      - ./spark/hive-site.xml:/opt/spark/conf/hive-site.xml
+      - ./spark/start-spark.sh:/start-spark.sh
       - hadoop_conf:/etc/hadoop
+      - pip_cache:/root/.cache/pip
     command: bash /start-spark.sh
     networks:
       - bigdata

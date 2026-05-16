@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datanode
+  namespace: bigdata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: datanode
+  template:
+    metadata:
+      labels:
+        app: datanode
+    spec:
+      containers:
+        - name: datanode
+          image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+          envFrom:
+            - configMapRef:
+                name: hadoop-config
+          volumeMounts:
+            - name: datanode-storage
+              mountPath: /hadoop/dfs/data
+      volumes:
+        - name: datanode-storage
+          persistentVolumeClaim:
+            claimName: datanode-pvc
