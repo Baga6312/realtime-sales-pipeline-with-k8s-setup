@@ -7,12 +7,38 @@ services:
       POSTGRES_USER: hiveuser
       POSTGRES_PASSWORD: hivepassword
       POSTGRES_DB: metastore
+      POSTGRES_MULTIPLE_DATABASES: metastore,wordpress
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
     networks:
       - bigdata
+
+  wordpress:
+    build:
+      context: .
+      dockerfile: Dockerfile-wordpress
+    container_name: wordpress
+    environment:
+      WORDPRESS_DB_HOST: postgres:5432
+      WORDPRESS_DB_USER: hiveuser
+      WORDPRESS_DB_PASSWORD: hivepassword
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_TABLE_PREFIX: wp_
+      WORDPRESS_DEBUG: 1
+    ports:
+      - "8081:80"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - bigdata
+    depends_on:
+      - postgres
+    entrypoint: >
+      bash -c "chown -R www-data:www-data /var/www/html/wp-content/plugins/ &&
+           docker-entrypoint.sh apache2-foreground"
 
   namenode:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
@@ -85,6 +111,7 @@ services:
     volumes:
       - ./notebooks:/notebooks
       - ./data:/data
+      - pip_cache:/root/.cache/pip
       - ./hive-site.xml:/opt/spark/conf/hive-site.xml
       - ./start-spark.sh:/start-spark.sh
       - hadoop_conf:/etc/hadoop
@@ -100,7 +127,9 @@ volumes:
   postgres_data:
   namenode_data:
   datanode_data:
+  wordpress_data:
   hadoop_conf:
+  pip_cache:
 
 networks:
   bigdata:

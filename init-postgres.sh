@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    CREATE DATABASE wordpress;
+    GRANT ALL PRIVILEGES ON DATABASE wordpress TO hiveuser;
+    \c wordpress
+    GRANT ALL ON SCHEMA public TO hiveuser;
+EOSQL

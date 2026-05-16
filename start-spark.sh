@@ -23,6 +23,7 @@ sleep 5
 
 # Start Jupyter
 echo "Starting Jupyter on port 8888..."
+
 python3 -m jupyter notebook \
   --ip=0.0.0.0 \
   --port=8888 \
@@ -30,4 +31,6 @@ python3 -m jupyter notebook \
   --allow-root \
   --notebook-dir=/notebooks \
   --NotebookApp.token='' \
-  --NotebookApp.password=''
+  --NotebookApp.password='' &
+
+tail -f /dev/null

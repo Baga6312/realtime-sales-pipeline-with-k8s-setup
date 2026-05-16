@@ -1,0 +1,14 @@
+FROM wordpress:latest
+
+RUN apt-get update && apt-get install -y libpq-dev unzip \
+    && docker-php-ext-install pgsql pdo_pgsql
+
+COPY pg4wp.zip /tmp/pg4wp.zip
+RUN unzip /tmp/pg4wp.zip -d /tmp
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+
