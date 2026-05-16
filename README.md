@@ -169,10 +169,5 @@ realtime-sales-pipeline/
 - YARN UI screenshot showing successful Spark jobs
 - HDFS UI screenshot showing raw data storage
 
-## Author
-
-r1bit99 — Big Data Engineering Project
-Tek-Up University, 2026
-```
 
 That's your README. 🎯
