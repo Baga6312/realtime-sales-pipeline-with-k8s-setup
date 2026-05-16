@@ -13,6 +13,7 @@ spec:
       labels:
         app: postgres
     spec:
+      serviceAccountName: bigdata-sa
       containers:
         - name: postgres
           image: postgres:15
@@ -24,6 +25,9 @@ spec:
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d/init-postgres.sh
+              subPath: init-postgres.sh
           livenessProbe:
             exec:
               command: ["pg_isready", "-U", "hiveuser"]
@@ -38,3 +42,6 @@ spec:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: postgres-pvc
+        - name: init-script
+          configMap:
+            name: postgres-init

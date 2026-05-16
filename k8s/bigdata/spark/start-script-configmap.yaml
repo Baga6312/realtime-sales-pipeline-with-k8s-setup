@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-start-script
+  namespace: bigdata
+data:
+  start-spark.sh: |
+    #!/bin/bash
+    SPARK_HOME=/opt/spark
+
+    echo "Downloading PostgreSQL JDBC driver..."
+    curl -o $SPARK_HOME/jars/postgresql-42.7.1.jar \
+      https://jdbc.postgresql.org/download/postgresql-42.7.1.jar
+
+    pip install jupyter notebook pyspark==3.5.8 pandas
+
+    echo "Starting Thrift Server on port 10001..."
+    $SPARK_HOME/sbin/stop-thriftserver.sh 2>/dev/null || true
+    rm -f /tmp/spark-*.pid 2>/dev/null || true
+    sleep 2
+    $SPARK_HOME/sbin/start-thriftserver.sh \
+      --master local \
+      --hiveconf hive.server2.transport.mode=http \
+      --hiveconf hive.server2.thrift.http.port=10001 \
+      --hiveconf hive.server2.thrift.http.path=cliservice \
+      --hiveconf hive.server2.thrift.bind.host=0.0.0.0 \
+      --hiveconf hive.server2.authentication=NONE
+
+    sleep 5
+
+    echo "Starting Jupyter on port 8888..."
+    python3 -m jupyter notebook \
+      --ip=0.0.0.0 \
+      --port=8888 \
+      --no-browser \
+      --allow-root \
+      --notebook-dir=/notebooks \
+      --NotebookApp.token='' \
+      --NotebookApp.password='' &
+
+    tail -f /dev/null

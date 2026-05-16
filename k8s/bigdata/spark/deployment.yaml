@@ -13,10 +13,10 @@ spec:
       labels:
         app: spark
     spec:
+      serviceAccountName: bigdata-sa
       containers:
         - name: spark
-          image: apache/spark:3.5.8
-          command: ["/bin/bash", "/start-spark.sh"]
+          image: localhost:5000/spark:latest
           ports:
             - containerPort: 4040
             - containerPort: 8080
@@ -30,14 +30,8 @@ spec:
             - name: YARN_CONF_DIR
               value: /etc/hadoop
           volumeMounts:
-            - name: hive-config
-              mountPath: /opt/spark/conf/hive-site.xml
-              subPath: hive-site.xml
             - name: notebooks
               mountPath: /notebooks
-            - name: start-script
-              mountPath: /start-spark.sh
-              subPath: start-spark.sh
           resources:
             requests:
               memory: "2Gi"
@@ -45,13 +39,19 @@ spec:
             limits:
               memory: "4Gi"
               cpu: "2"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8888
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8888
+            initialDelaySeconds: 60
+            periodSeconds: 10
       volumes:
-        - name: hive-config
-          configMap:
-            name: spark-hive-config
         - name: notebooks
           persistentVolumeClaim:
             claimName: notebooks-pvc
-        - name: start-script
-          configMap:
-            name: spark-start-script

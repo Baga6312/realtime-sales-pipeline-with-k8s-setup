@@ -13,9 +13,10 @@ spec:
       labels:
         app: wordpress
     spec:
+      serviceAccountName: wordpress-sa
       containers:
         - name: wordpress
-          image: wordpress:latest
+          image: localhost:5000/wordpress:latest
           ports:
             - containerPort: 80
           envFrom:
