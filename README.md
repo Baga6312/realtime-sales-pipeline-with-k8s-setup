@@ -159,15 +159,3 @@ realtime-sales-pipeline/
 ├── ingress/
 └── namespaces/
 ```
-
-## Deliverables
-
-- PySpark notebook (.ipynb) with full ETL pipeline
-- Docker Compose stack (production-ready)
-- Kubernetes manifests (namespace isolation, RBAC, HPA, NetworkPolicy)
-- Power BI report (.pbix) with Top 10 products + regional heatmap
-- YARN UI screenshot showing successful Spark jobs
-- HDFS UI screenshot showing raw data storage
-
-
-That's your README. 🎯
