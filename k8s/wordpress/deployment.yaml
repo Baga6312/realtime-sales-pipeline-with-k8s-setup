@@ -16,7 +16,8 @@ spec:
       serviceAccountName: wordpress-sa
       containers:
         - name: wordpress
-          image: localhost:5000/wordpress:latest
+          image: wordpress-bigdata:v3
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           envFrom:

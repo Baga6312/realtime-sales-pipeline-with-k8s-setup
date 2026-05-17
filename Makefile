@@ -1,25 +1,18 @@
-REGISTRY=localhost:5000
-SPARK_IMAGE=$(REGISTRY)/spark:latest
-WORDPRESS_IMAGE=$(REGISTRY)/wordpress:latest
+SPARK_IMAGE=spark-bigdata:latest
+WORDPRESS_IMAGE=wordpress-bigdata:latest
 
-.PHONY: all build push deploy teardown
+.PHONY: all build deploy teardown status logs-spark logs-postgres logs-wordpress
 
-all: build push deploy
+all: build deploy
 
 # Build images
 build:
 	docker build -t $(SPARK_IMAGE) ./spark
 	docker build -t $(WORDPRESS_IMAGE) ./wordpress -f ./wordpress/Dockerfile-wordpress
 
-# Push to local registry
-push:
-	docker push $(SPARK_IMAGE)
-	docker push $(WORDPRESS_IMAGE)
-
 # Deploy to Kubernetes
 deploy:
 	kubectl apply -f k8s/namespaces/
-	kubectl apply -f k8s/registry/
 	kubectl apply -f k8s/bigdata/postgres/
 	kubectl apply -f k8s/bigdata/hadoop/
 	kubectl apply -f k8s/bigdata/spark/
@@ -31,7 +24,6 @@ teardown:
 	kubectl delete -f k8s/ingress/ --ignore-not-found
 	kubectl delete -f k8s/wordpress/ --ignore-not-found
 	kubectl delete -f k8s/bigdata/ --ignore-not-found
-	kubectl delete -f k8s/registry/ --ignore-not-found
 	kubectl delete -f k8s/namespaces/ --ignore-not-found
 
 # Check status
@@ -48,4 +40,3 @@ logs-postgres:
 
 logs-wordpress:
 	kubectl logs -f deployment/wordpress -n wordpress
-	

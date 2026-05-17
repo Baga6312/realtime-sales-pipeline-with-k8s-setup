@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y libpq-dev unzip \
 COPY pg4wp.zip /tmp/pg4wp.zip
 RUN unzip /tmp/pg4wp.zip -d /tmp
 
+COPY shop-plugin.php /tmp/shop-plugin.php
+
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

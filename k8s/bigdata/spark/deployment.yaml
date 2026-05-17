@@ -16,7 +16,8 @@ spec:
       serviceAccountName: bigdata-sa
       containers:
         - name: spark
-          image: localhost:5000/spark:latest
+          image: spark-bigdata:v2
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4040
             - containerPort: 8080
@@ -32,13 +33,6 @@ spec:
           volumeMounts:
             - name: notebooks
               mountPath: /notebooks
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu: "1"
-            limits:
-              memory: "4Gi"
-              cpu: "2"
           livenessProbe:
             httpGet:
               path: /

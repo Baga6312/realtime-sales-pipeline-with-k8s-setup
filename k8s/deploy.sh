@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "======================================"
-echo "  realtime-sales-pipeline K8s Deploy"
-echo "======================================"
+echo "[0/8] Building images..."
+docker build -t spark-bigdata:latest ../spark
+docker build -t wordpress-bigdata:latest ../wordpress -f ../wordpress/Dockerfile-wordpress
 
 # 1. Namespaces
 echo "[1/8] Creating namespaces..."
@@ -15,10 +15,17 @@ echo "[2/8] Applying secrets..."
 kubectl apply -f bigdata/postgres/secret.yaml
 kubectl apply -f wordpress/secret.yaml
 
+# 2.5 RBAC
+echo "[2.5/8] Applying RBAC..."
+kubectl apply -f bigdata/rbac.yaml
+
+
 # 3. ConfigMaps
+
 echo "[3/8] Applying configmaps..."
 kubectl apply -f bigdata/hadoop/configmap.yaml
 kubectl apply -f bigdata/spark/configmap.yaml
+kubectl apply -f bigdata/postgres/init-configmap.yaml
 
 # 4. PVCs
 echo "[4/8] Creating persistent volumes..."
@@ -32,13 +39,11 @@ kubectl apply -f wordpress/pvc.yaml
 echo "[5/8] Deploying services..."
 kubectl apply -f bigdata/postgres/deployment.yaml
 kubectl apply -f bigdata/postgres/service.yaml
-echo "Waiting for PostgreSQL..."
-kubectl wait --for=condition=ready pod -l app=postgres -n bigdata --timeout=120s
+echo "PostgreSQL deploying..."
 
 kubectl apply -f bigdata/hadoop/namenode-deployment.yaml
 kubectl apply -f bigdata/hadoop/namenode-service.yaml
-echo "Waiting for NameNode..."
-kubectl wait --for=condition=ready pod -l app=namenode -n bigdata --timeout=120s
+echo "NameNode deploying "
 
 kubectl apply -f bigdata/hadoop/datanode-deployment.yaml
 kubectl apply -f bigdata/hadoop/resourcemanager-deployment.yaml
@@ -59,17 +64,15 @@ kubectl apply -f bigdata/networkpolicy.yaml
 echo "[7/8] Applying autoscalers..."
 kubectl apply -f bigdata/spark/hpa.yaml
 kubectl apply -f bigdata/hadoop/datanode-hpa.yaml
-
 # 8. Ingress
 echo "[8/8] Setting up ingress..."
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
-sleep 10
+sleep 30  
+kubectl delete validatingwebhookconfiguration ingress-nginx-admission
 kubectl apply -f ingress/ingress.yaml
 
 echo ""
-echo "======================================"
 echo "  Deployment Complete!"
-echo "======================================"
 echo ""
 echo "Add to C:\\Windows\\System32\\drivers\\etc\\hosts:"
 echo "127.0.0.1 jupyter.bigdata.local"

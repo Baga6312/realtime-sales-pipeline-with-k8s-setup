@@ -19,7 +19,7 @@ services:
   wordpress:
     build:
       context: ./wordpress  
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-wordpress
     container_name: wordpress
     environment:
       WORDPRESS_DB_HOST: postgres:5432
