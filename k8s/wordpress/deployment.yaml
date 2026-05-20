@@ -16,7 +16,7 @@ spec:
       serviceAccountName: wordpress-sa
       containers:
         - name: wordpress
-          image: wordpress-bigdata:v3
+          image: wordpress-bigdata:v4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
@@ -30,14 +30,18 @@ spec:
             httpGet:
               path: /wp-login.php
               port: 80
-            initialDelaySeconds: 60
+            initialDelaySeconds: 180
             periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
           readinessProbe:
             httpGet:
-              path: /wp-login.php
+              path: /wp-login.php 
               port: 80
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 5
       volumes:
         - name: wordpress-storage
           persistentVolumeClaim:

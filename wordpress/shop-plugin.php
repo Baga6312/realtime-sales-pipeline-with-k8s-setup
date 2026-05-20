@@ -4,6 +4,9 @@
  * Description: Custom shop with full behavioral tracking → PostgreSQL
  * Version: 2.0
  */
+// Disable WordPress version check that breaks PG4WP
+add_filter('pre_site_transient_update_core', '__return_null');
+add_filter('pre_transient_update_core', '__return_null');
 
 register_activation_hook(__FILE__, 'bigdata_create_tables');
 
