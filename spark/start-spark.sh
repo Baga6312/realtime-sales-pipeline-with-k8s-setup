@@ -2,10 +2,7 @@
 
 SPARK_HOME=/opt/spark
 
-# Download PostgreSQL JDBC driver
-echo "Downloading PostgreSQL JDBC driver..."
-curl -o $SPARK_HOME/jars/postgresql-42.7.1.jar \
-  https://jdbc.postgresql.org/download/postgresql-42.7.1.jar
+
 
 # Install Jupyter + pyspark
 pip install jupyter notebook pyspark==3.5.8

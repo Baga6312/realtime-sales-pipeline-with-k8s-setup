@@ -71,3 +71,30 @@ spec:
                 name: wordpress
                 port:
                   number: 80
+
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: thrift-ingress
+  namespace: bigdata
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: thrift.bigdata.local
+      http:
+        paths:
+          - path: /cliservice
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: spark
+                port:
+                  number: 10001
+    

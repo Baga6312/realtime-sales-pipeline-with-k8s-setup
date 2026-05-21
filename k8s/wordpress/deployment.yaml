@@ -16,7 +16,7 @@ spec:
       serviceAccountName: wordpress-sa
       containers:
         - name: wordpress
-          image: wordpress-bigdata:v4
+          image: wordpress-bigdata:v6
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80

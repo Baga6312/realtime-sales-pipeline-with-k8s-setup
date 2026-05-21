@@ -10,10 +10,11 @@ spec:
     - name: thrift
       port: 10001
       targetPort: 10001
+      nodePort: 30001
     - name: jupyter
       port: 8888
       targetPort: 8888
     - name: ui
       port: 4040
       targetPort: 4040
-  type: ClusterIP
+  type: NodePort

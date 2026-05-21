@@ -14,20 +14,6 @@ data:
 
     pip install jupyter notebook pyspark==3.5.8 pandas
 
-    echo "Starting Thrift Server on port 10001..."
-    $SPARK_HOME/sbin/stop-thriftserver.sh 2>/dev/null || true
-    rm -f /tmp/spark-*.pid 2>/dev/null || true
-    sleep 2
-    $SPARK_HOME/sbin/start-thriftserver.sh \
-      --master local \
-      --hiveconf hive.server2.transport.mode=http \
-      --hiveconf hive.server2.thrift.http.port=10001 \
-      --hiveconf hive.server2.thrift.http.path=cliservice \
-      --hiveconf hive.server2.thrift.bind.host=0.0.0.0 \
-      --hiveconf hive.server2.authentication=NONE
-
-    sleep 5
-
     echo "Starting Jupyter on port 8888..."
     python3 -m jupyter notebook \
       --ip=0.0.0.0 \
@@ -38,4 +24,17 @@ data:
       --NotebookApp.token='' \
       --NotebookApp.password='' &
 
-    tail -f /dev/null
+    echo "Starting Thrift Server loop..."
+    while true; do
+      rm -f /tmp/spark-*.pid 2>/dev/null
+      $SPARK_HOME/sbin/start-thriftserver.sh \
+        --master local \
+        --hiveconf hive.server2.transport.mode=http \
+        --hiveconf hive.server2.thrift.http.port=10001 \
+        --hiveconf hive.server2.thrift.http.path=cliservice \
+        --hiveconf hive.server2.thrift.bind.host=0.0.0.0 \
+        --hiveconf hive.server2.authentication=NONE
+
+      echo "Thrift server exited, waiting 10s before restart..."
+      sleep 10
+    done
